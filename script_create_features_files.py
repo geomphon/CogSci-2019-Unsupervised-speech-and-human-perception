@@ -33,7 +33,7 @@ def extract_features(path_to_wavs, feat_func, path_to_save):
             if not filename.endswith('.wav'):
                 continue
             #print(filename)
-            full_name = '/' + os.path.join(root.lstrip('./'), filename)
+            full_name = os.path.join(root.lstrip('./'), filename)
             fs, waveform = wav.read(full_name)
             print(fs)
             waveform = waveform.astype(float)
@@ -45,15 +45,28 @@ def extract_features(path_to_wavs, feat_func, path_to_save):
             np.savetxt( path_to_save + '/' + filename[:len(filename) - 3] + 'csv', feat, delimiter=',')
 
 if __name__ == "__main__":
-    feature_wanted = sys.argv[1]
-    path_wav = sys.argv[2]
-    path_save = sys.argv[3]
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='compute features from .wav')
+    parser.add_argument('feature_wanted', metavar='feat', type=str,
+                        help='feature wanted, for the moment, only mfccs available')
+    parser.add_argument('path_wav', metavar='p_wav', type=str,
+                        help='path to av files')
+    parser.add_argument('path_save', metavar='p_save', type=str,
+                        help='path to the folder where to save the features extracted, one csv per file')
+
+
+    args = parser.parse_args()
+    feature_wanted = args.feature_wanted
+
+
     if feature_wanted == 'mfccs':
         feature_func = "mfccs"
     else:
         print('features unavailable')
 
-    extract_features(path_wav, feature_func, path_save)
+    extract_features(args.path_wav, feature_func, args.path_save)
 
 
 

@@ -167,10 +167,18 @@ def extract_posteriors(features_folder, model_file, output_folder):
 
 
 if __name__ == '__main__':
-    import sys
-    features_folder = sys.argv[1]
-    model_file = sys.argv[2]
-    output_folder = sys.argv[3]
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Extract posteriors from features file and a chosen model')
+    parser.add_argument('features_folder', metavar='feat', type=str,
+                        help='folder where the csv numpy files are (mfccs or other)')
+    parser.add_argument('model_file', metavar='model_mat', type=str,
+                        help='mat file of the model you want to use')
+    parser.add_argument('output_folder', metavar='out', type=str,
+                        help='output folder where to put the posteriors')
 
 
-    extract_posteriors(features_folder, model_file, output_folder)
+    args = parser.parse_args()
+
+    extract_posteriors(args.features_folder, args.model_file, args.output_folder)

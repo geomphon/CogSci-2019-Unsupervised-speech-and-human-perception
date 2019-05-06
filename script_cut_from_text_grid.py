@@ -3,7 +3,8 @@
 """
 Created on December 11 2018
 @author: Juliette MILLET (adapted from Ewan DUNBAR
-# Cut all labelled intervals in a TextGrid
+# Cut all labelled intervals in a TextGrid, can be used
+if you want to transform directly the source files and then cut them
 
 """
 from __future__ import print_function

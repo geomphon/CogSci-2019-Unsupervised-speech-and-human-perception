@@ -54,14 +54,19 @@ def csvnp2mat(csvnp_feat_folder, mat_file, vad_file = '', percent_valid = 0):
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
 
-    csvnp_feat_folder = sys.argv[1]
-    mat_file_train = sys.argv[2]
-    if len(sys.argv) > 3:
-        valid_file = sys.argv[3]
-        percentage_valid = int(sys.argv[4]) # 10 is ok
-    else:
-        valid_file = ''
-        percentage_valid= 0
-    csvnp2mat(csvnp_feat_folder, mat_file_train, vad_file=valid_file, percent_valid=percentage_valid)
+    parser = argparse.ArgumentParser(
+        description='transform csv files to mat file and csv file for validation')
+    parser.add_argument('csvnp_feat_folder', metavar='feat', type=str,
+                        help='folder where the csv numpy files are')
+    parser.add_argument('mat_train_file', metavar='mat_train', type=str,
+                        help='mat file for train created')
+    parser.add_argument('csv_valid_file', metavar='csv_valid', type=str,
+                        help='csv file for validation if wanted, if not put \'\'')
+    parser.add_argument('percentage_valid', metavar='perc_valid', type=int,
+                        help='percentage used for validation (sequences shuffled) if not wanted put 0, usually put 10')
+
+    args = parser.parse_args()
+
+    csvnp2mat(args.csvnp_feat_folder, args.mat_train_file, args.csv_valid_file, args.percentage_valid)

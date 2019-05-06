@@ -114,13 +114,29 @@ def keep_results(results, distances, dico_final, output_file_results, output_fil
 
 if __name__ == '__main__':
     import argparse
-    fil_abx = sys.argv[1]
-    fold_files = sys.argv[2]
-    distance = sys.argv[3]
-    output_file = sys.argv[4]
+
+    parser = argparse.ArgumentParser(description='Output the abx scores from list of abx triplet and .csv files of the representation of each triphone')
+    parser.add_argument('file_abx', metavar='abx', type=str,
+                        help='file with the list of ABX triplet you want to compare, the file needs to have at least three columns, one file_OTH, file_TGT and file_X')
+    parser.add_argument('fold_file', metavar='fold', type=str,
+                        help='the folder where the features files are')
+    parser.add_argument('distance', metavar='d', type=str,
+                        help='distance used for the dtw computation: distance used by cdist, can be \'braycurtis\', '
+                             '\'canberra\',\'chebyshev\', \'cityblock\', \'correlation\', \'cosine\', \'dice\', \'euclidean\', '
+                             '\'hamming\', \'jaccard\', \'kulsinski\', \'mahalanobis\', \'matching\', \'minkowski\', \'rogerstanimoto\', '
+                             '\'russellrao\', \'seuclidean\', \'sokalmichener\', \'sokalsneath\', \'sqeuclidean\', \'wminkowski\', '
+                             '\'yule\'. if \'kl\', then instead of dtw with a distance, we use kl divergence')
+    parser.add_argument('output_file', metavar='out', type=str,
+                        help='output file beginning: three file are produced : one _results of the form A, B, X, real, '
+                             'result_model one _distances same as _results but with AX and BX distances at the end the '
+                             'last one _final of the same form that the file you give it : just add distances results')
+
+
+    args = parser.parse_args()
+
     print('Computing ABX results...')
-    resul, dis, dico = compute_ABX_results(fil_abx, fold_files, dist_for_cdist=distance)
+    resul, dis, dico = compute_ABX_results(args.file_abx, args.fold_files, dist_for_cdist=args.distance)
     print('Saving files...')
-    keep_results(resul, dis, dico, output_file_results=output_file + '_results.csv',
-                 output_file_distances=output_file + '_distances.csv', file_abx=fil_abx, output_final_distances=output_file + '_final.csv')
+    keep_results(resul, dis, dico, output_file_results=args.output_file + '_results.csv',
+                 output_file_distances=args.output_file + '_distances.csv', file_abx=args.file_abx, output_final_distances=args.output_file + '_final.csv')
     print('Done')

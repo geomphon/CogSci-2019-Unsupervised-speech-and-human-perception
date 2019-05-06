@@ -45,7 +45,7 @@ with nb_cpu the number of cpu you can use
 ######Note: in path/2/model/folder the code will stock the parameters of the models every 20 iterations as .mat files. You will need to have a log/ folder in this folder for the code to also stock the values of the loglikelihood during the training process.
 ### III Export results
 
-##### 1 To export posteriors, use the 'script_extract_posteriors' and give it numpy array in .csv files (same features as the train files):
+##### 1 To export posteriors, use the 'script_extract_posteriors' and give it numpy array in .csv files (same features as the train files), and a .mat file with the model you want to use (you have the models we trained in the models folder)
 
 ```python script_extract_posteriors.py /path/2/features/test/files /path/2/model/mat/file path/to/output/folder```
 
