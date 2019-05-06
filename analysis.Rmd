@@ -1,0 +1,474 @@
+---
+title: "Comparing unsupervised speech learning directly to human performance in speech perception: Cog Sci 2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r include=FALSE}
+library(magrittr)
+correct_ipa <- function(data){
+  data <- data %>%
+  dplyr::mutate(vowel_eng = 
+                  ifelse(vowel_eng == "AE", "æ",
+                  ifelse(vowel_eng == "UH", "ʊ",
+                  ifelse(vowel_eng == "AH", "ʌ", 
+                  ifelse(vowel_eng == "IH", "ɪ", vowel_eng)))),
+                vowel_fr =
+                  ifelse(vowel_fr == "A", "a",
+                  ifelse(vowel_fr == "E", "ɛ", 
+                  ifelse(vowel_fr == "OE", "œ",
+                  ifelse(vowel_fr == "O", "ɔ",
+                  ifelse(vowel_fr == "Y", "y",
+                  ifelse(vowel_fr == "U", "u",
+                  ifelse(vowel_fr == "I", "i", vowel_fr)))))))
+                  )
+  return(data)
+}
+correct_ipa_context <- function(data){
+  data <- data %>%
+  dplyr::mutate(context = 
+                  ifelse(context == "V_Z", "v_z",
+                  ifelse(context == "V_K", "v_k",
+                  ifelse(context == "SH_S", "ʃ_s", 
+                  ifelse(context == "Z_G", "z_g", 
+                  ifelse(context == "V_P", "v_p", 
+                  ifelse(context == "Z_D", "z_d",
+                  ifelse(context == "Z_B", "z_b",
+                  ifelse(context == "SH_B", "ʃ_b", 
+                  ifelse(context == "V_SH", "v_ʃ",
+                  ifelse(context == "Z_SH", "z_ʃ",
+                  ifelse(context == "SH_V", "ʃ_v",       
+                  ifelse(context == "V_F", "v_f", tolower(context))))))))))))))
+  return(data)
+}
+```
+
+```{r load-data, include=FALSE}
+distances_eng_dpgmm <- readr::read_csv("data/English_1501_vtln_kl_div_final.csv") %>%
+                       dplyr::rename(distance_eng_dpgmm_TGT=distance_TGT,
+                                     distance_eng_dpgmm_OTH=distance_OTH)
+distances_fr_dpgmm <- readr::read_csv("data/French_1501_vtln_kl_div_final.csv") %>%
+                       dplyr::rename(distance_fr_dpgmm_TGT=distance_TGT,
+                                     distance_fr_dpgmm_OTH=distance_OTH)
+distances_mfcc <- readr::read_csv("data/mfccs_kaldi_cosine_final.csv") %>%
+                  dplyr::rename(distance_mfcc_TGT=distance_TGT,
+                                distance_mfcc_OTH=distance_OTH)
+humans <- readr::read_csv("data/experiment_data.csv",
+                 col_types=readr::cols(survey_time=readr::col_character())) %>%
+  dplyr::select(-dplyr::contains("dist"), -X1) %>%
+  dplyr::mutate(subject_language=ifelse(subject_language == "fr2", "fr",
+                                        subject_language))
+results <- dplyr::left_join(humans, distances_eng_dpgmm) %>%
+  dplyr::left_join(distances_fr_dpgmm) %>%
+  dplyr::left_join(distances_mfcc) %>%
+  dplyr::mutate(delta_eng_dpgmm=distance_eng_dpgmm_OTH-distance_eng_dpgmm_TGT,
+                delta_fr_dpgmm=distance_fr_dpgmm_OTH-distance_fr_dpgmm_TGT,
+                delta_mfcc=distance_mfcc_OTH-distance_mfcc_TGT,
+                delta_eng_dpgmm_s=scale(delta_eng_dpgmm, center=FALSE)[,1],
+                delta_fr_dpgmm_s=scale(delta_fr_dpgmm, center=FALSE)[,1],
+                delta_mfcc_s=scale(delta_mfcc, center=FALSE)[,1],
+                corr_ans_c=ifelse(CORR_ANS=="A", -1, 1),
+                subject_language_c=ifelse(subject_language=="eng", -1, 1)) %>%
+  correct_ipa %>% correct_ipa_context
+```
+
+```{r n}
+humans %>%
+  dplyr::select(subject_id, subject_language) %>%
+  dplyr::distinct() %>%
+  dplyr::group_by(subject_language) %>%
+  dplyr::summarize(dplyr::n()) %>%
+  dplyr::ungroup()
+```
+
+```{r global-abx-scores}
+summary_overall <- results %>%
+  dplyr::group_by(tripletid, context, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(ABX_eng_dpgmm=delta_eng_dpgmm[1]>0,
+                   ABX_fr_dpgmm=delta_fr_dpgmm[1]>0,
+                   ABX_mfcc=delta_mfcc[1]>0,
+                   ABX_human=mean(user_corr)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(context, vowel_fr, vowel_eng) %>%
+  dplyr::summarize_at(dplyr::vars(dplyr::starts_with("ABX_")), mean) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(vowel_fr, vowel_eng) %>%
+  dplyr::summarize_at(dplyr::vars(dplyr::starts_with("ABX_")), mean) %>%
+  dplyr::ungroup() %>%
+  dplyr::summarize_at(dplyr::vars(dplyr::starts_with("ABX_")), mean)
+summary_overall
+```
+
+```{r abx-by-language}
+results %>%
+  dplyr::group_by(subject_language, tripletid, context, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(ABX_human=mean(user_corr)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(subject_language, context, vowel_fr, vowel_eng) %>%
+  dplyr::summarize_at(dplyr::vars(dplyr::starts_with("ABX_")), mean) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(subject_language, vowel_fr, vowel_eng) %>%
+  dplyr::summarize_at(dplyr::vars(dplyr::starts_with("ABX_")), mean) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(subject_language) %>%
+  dplyr::summarize_at(dplyr::vars(dplyr::starts_with("ABX_")), mean) %>%
+  dplyr::ungroup()
+```
+
+
+```{r summary-human}
+model_nuisance <- lme4::glmer(
+  user_corr ~ corr_ans_c*subject_language_c + (1|subject_id),
+  family=binomial(link="probit"),
+  data=results
+)
+summary_fr <- results %>%
+  dplyr::filter(subject_language=="fr") %>%
+  dplyr::mutate(pred_nuisance_fr=
+                  predict(model_nuisance, .)) %>%
+  dplyr::group_by(tripletid, context, speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_eng, vowel_fr) %>%
+  dplyr::mutate(p_nuis=pnorm(pred_nuisance_fr)) %>%
+  dplyr::summarize(resid_fr=mean(user_corr-p_nuis),
+                   pct_fr=mean(user_corr)) %>%
+  dplyr::ungroup()
+summary_eng <- results %>%
+  dplyr::filter(subject_language=="eng") %>%
+  dplyr::mutate(pred_nuisance_eng=
+                  predict(model_nuisance, .)) %>%
+  dplyr::group_by(tripletid, context, speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_eng, vowel_fr) %>%
+  dplyr::mutate(p_nuis=pnorm(pred_nuisance_eng)) %>%
+  dplyr::summarize(resid_eng=mean(user_corr-p_nuis),
+                   pct_eng=mean(user_corr)) %>%
+  dplyr::ungroup()
+summary_h <- dplyr::left_join(summary_fr, summary_eng)
+summary_h_bypair <- summary_h %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(resid_fr=mean(resid_fr),
+                   resid_eng=mean(resid_eng),
+                   pct_fr=mean(pct_fr),
+                   pct_eng=mean(pct_eng)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(vowel_fr, vowel_eng) %>%
+  dplyr::summarize(resid_fr=mean(resid_fr),
+                   resid_eng=mean(resid_eng),
+                   pct_fr=mean(pct_fr),
+                   pct_eng=mean(pct_eng)) %>%
+  dplyr::ungroup() 
+summary_h_bylang <- tidyr::gather(summary_h_bypair, key=`Native language`,
+                                      value=Accuracy, pct_fr, pct_eng) %>%
+  dplyr::mutate(`Native language`=ifelse(`Native language`=="pct_fr",
+                                         "French listeners",
+                                         "English listeners"),
+                `English vowel`=vowel_eng, `French vowel`=vowel_fr)
+```
+
+```{r accuracy-plot}
+ggplot2::ggplot(summary_h_bylang,
+                ggplot2::aes(x=`French vowel`, y=`English vowel`,
+                fill=Accuracy)) +
+  ggplot2::geom_tile(colour="black") +
+  ggplot2::scale_fill_gradient2(low = "black",
+                                mid = "#333333",
+                                high = "white",
+                                midpoint=0.45,
+                               limits = c(0, 1.00),
+                               breaks=seq(0, 1.00, .1),
+                               labels=as.character(seq(0, 1.00, .1)*100)) +
+  emdplot::emd_theme() +
+  ggplot2::theme(legend.position = "bottom",
+                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
+                 legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
+                 legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::guides(fill=ggplot2::guide_colourbar(title.position="bottom",
+                                                title.hjust=0.5)) +
+  ggplot2::labs(x="French vowel", y="English vowel", fill="Percent accuracy") +
+  ggplot2::facet_grid(`Native language` ~ .) +
+  ggplot2::ggsave("figures/Figure_AccuraciesGrouped.png", width=4, height=5)
+```
+
+```{r cor-human-eng-fr}
+with(summary_h, cor(resid_fr, resid_eng))
+with(summary_h_bypair, cor(resid_fr, resid_eng))
+```
+
+```{r plot-eng-fr-byvowel}
+ggplot2::ggplot(summary_h_bypair,
+                ggplot2::aes(y=resid_fr, x=resid_eng,
+                             label=paste0(vowel_eng, ":", vowel_fr))) +
+  ggplot2::geom_abline(slope=1, intercept=0, lty="dashed",
+                       lwd=0.6, colour="#aaaaaa") +
+  ggplot2::geom_point() +
+  ggrepel::geom_text_repel(family="Times New Roman", size=4.7) +
+  emdplot::emd_theme() +
+  ggplot2::theme(legend.position = "bottom",
+                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
+                 legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
+                 legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::labs(x="Residualized accuracy (English)",
+                 y="Residualized accuracy (French)") +
+  ggplot2::ggsave("figures/Figure_FrVsEg.png", width=4, height=4)
+```
+
+
+```{r lm-predict-responses-from-deltas}
+model_global_mfcc <- lme4::glmer(
+              user_corr ~ delta_mfcc_s + subject_language_c*corr_ans_c +
+              (1|subject_id) + (1|tripletid), 
+              family=binomial(link="probit"), data=results)
+model_global_engdp <- lme4::glmer(
+              user_corr ~ delta_eng_dpgmm_s + subject_language_c*corr_ans_c +
+              (1|subject_id) + (1|tripletid), 
+            family=binomial(link="probit"), data=results)
+model_global_frdp <- lme4::glmer(
+              user_corr ~ delta_fr_dpgmm_s +  subject_language_c*corr_ans_c + 
+              (1|subject_id) + (1|tripletid), 
+            family=binomial(link="probit"), data=results)
+```
+
+```{r compare-lm-deltas}
+lme4::fixef(model_global_mfcc)
+lme4::fixef(model_global_engdp)
+lme4::fixef(model_global_frdp)
+AIC(model_global_mfcc)
+AIC(model_global_engdp)
+AIC(model_global_frdp)
+```
+
+
+```{r lm-native-language-effect}
+results <- results %>%
+  dplyr::mutate(native_machine=ifelse(subject_language == "eng",
+                                      delta_eng_dpgmm_s, delta_fr_dpgmm_s),
+                nonnative_machine=ifelse(subject_language == "eng",
+                                         delta_fr_dpgmm_s, delta_eng_dpgmm_s))
+model_native <- lme4::glmer(
+              user_corr ~ native_machine + subject_language_c*corr_ans_c +
+              (1|subject_id) + (1|tripletid), 
+            family=binomial(link="probit"), data=results)
+model_nonnative <- lme4::glmer(
+              user_corr ~ nonnative_machine +  subject_language_c*corr_ans_c + 
+              (1|subject_id) + (1|tripletid), 
+            family=binomial(link="probit"), data=results)
+```
+
+
+```{r model-comparison-native-language-effect}
+lme4::fixef(model_native)
+lme4::fixef(model_nonnative)
+AIC(model_native)
+AIC(model_nonnative)
+```
+
+
+```{r random-baseline-model-comparison-native-language}
+STAT_CACHE_FILE <- "data/statistics_native_nonnative.RData"
+if (!file.exists(STAT_CACHE_FILE)) {
+  N_SAMPLES <- 9999
+  N_CORES <- 20
+  doParallel::registerDoParallel(cores=N_CORES)
+  `%dopar%` <- foreach::`%dopar%`
+  statistics_l <- foreach::foreach(i=1:N_SAMPLES) %dopar% {
+    results_fake <- results %>%
+      dplyr::mutate(fake_subject_language=sample(subject_language),
+                    native_machine=ifelse(fake_subject_language == "eng",
+                                      delta_eng_dpgmm_s, delta_fr_dpgmm_s),
+                    nonnative_machine=ifelse(fake_subject_language == "eng",
+                                         delta_fr_dpgmm_s, delta_eng_dpgmm_s))
+    model_native_i <- lme4::glmer(
+      user_corr ~ native_machine + subject_language_c*corr_ans_c +
+        (1|subject_id) + (1|tripletid), 
+      family=binomial(link="probit"), data=results_fake)
+    model_nonnative_i <- lme4::glmer(
+      user_corr ~ nonnative_machine +  subject_language_c*corr_ans_c + 
+        (1|subject_id) + (1|tripletid), 
+      family=binomial(link="probit"), data=results_fake)
+    AIC(model_native_i)-AIC(model_nonnative_i)
+  }
+  statistics <- unlist(statistics_l)
+  save(statistics, file=STAT_CACHE_FILE)
+} else {
+  load(STAT_CACHE_FILE)
+}
+pval_auc <- sum(statistics <=
+           (AIC(model_native)-AIC(model_nonnative)))/(length(statistics)+1)
+print(pval_auc)
+```
+
+
+```{r corrected-delta-predictions}
+model_native_for_pred <- lme4::glmer(
+              user_corr ~ native_machine + subject_language_c*corr_ans_c +
+              (1|subject_id), 
+            family=binomial(link="probit"), data=results)
+preds_fr <- results %>%
+  dplyr::filter(subject_language=="fr") %>%
+  dplyr::mutate(pred_uncorrected_fr=predict(model_native_for_pred, .),
+                pred_nuisance_fr=predict(model_native_for_pred,
+                                         newdata=dplyr::mutate(., native_machine=0))) %>%
+  dplyr::group_by(tripletid, context, speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_eng, vowel_fr) %>%
+  dplyr::mutate(p_model=pnorm(pred_uncorrected_fr),
+                p_nuis=pnorm(pred_nuisance_fr)) %>%
+  dplyr::summarize(pred_fr=mean(p_model-p_nuis)) %>%
+  dplyr::ungroup()
+preds_eng <- results %>%
+  dplyr::filter(subject_language=="eng") %>%
+  dplyr::mutate(pred_uncorrected_eng=predict(model_native_for_pred, .),
+                pred_nuisance_eng=predict(model_native_for_pred,
+                                         newdata=dplyr::mutate(., native_machine=0))) %>%
+  dplyr::group_by(tripletid, context, speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_eng, vowel_fr) %>%
+  dplyr::mutate(p_model=pnorm(pred_uncorrected_eng),
+                p_nuis=pnorm(pred_nuisance_eng)) %>%
+  dplyr::summarize(pred_eng=mean(p_model-p_nuis)) %>%
+  dplyr::ungroup()
+preds <- dplyr::left_join(preds_fr, preds_eng)
+preds_bypair <- preds %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(pred_fr=mean(pred_fr),
+                   pred_eng=mean(pred_eng)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(vowel_fr, vowel_eng) %>%
+  dplyr::summarize(pred_fr=mean(pred_fr),
+                   pred_eng=mean(pred_eng)) %>%
+  dplyr::ungroup() 
+differences_machine <- preds %>%
+  dplyr::mutate(`Native language effect (models)`=(pred_fr-pred_eng))
+differences_machine_grouped <- differences_machine %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(`Native language effect (models)`=
+                     mean(`Native language effect (models)`)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(vowel_fr, vowel_eng) %>%
+  dplyr::summarize(`Native language effect (models)`=
+                     mean(`Native language effect (models)`)) %>%
+  dplyr::ungroup() 
+differences_machine_bycontext <- differences_machine %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, context) %>%
+  dplyr::summarize(`Native language effect (models)`=
+                     mean(`Native language effect (models)`)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(context) %>%
+  dplyr::summarize(`Native language effect (models)`=
+                     mean(`Native language effect (models)`)) %>%
+  dplyr::ungroup()
+differences_machine_byspeaker <- differences_machine %>%
+  dplyr::group_by(vowel_fr, vowel_eng, speaker_OTH, speaker_TGT,
+                  speaker_X) %>%
+  dplyr::summarize(`Native language effect (models)`=
+                     mean(`Native language effect (models)`)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(speaker_TGT, speaker_OTH, speaker_X) %>%
+  dplyr::summarize(`Native language effect (models)`=
+                     mean(`Native language effect (models)`)) %>%
+  dplyr::ungroup()
+differences_human <- summary_h %>%
+  dplyr::mutate(`Native language effect (listeners)`=
+                     (resid_fr-resid_eng)) 
+differences_human_grouped <- differences_human %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(`Native language effect (listeners)`=
+                     mean(`Native language effect (listeners)`)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(vowel_fr, vowel_eng) %>%
+  dplyr::summarize(`Native language effect (listeners)`=
+                     mean(`Native language effect (listeners)`)) %>%
+  dplyr::ungroup() 
+differences_human_bycontext <- differences_human %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, context) %>%
+  dplyr::summarize(`Native language effect (listeners)`=
+                     mean(`Native language effect (listeners)`)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(context) %>%
+  dplyr::summarize(`Native language effect (listeners)`=
+                     mean(`Native language effect (listeners)`)) %>%
+  dplyr::ungroup()
+differences_human_byspeaker <- differences_human %>%
+  dplyr::group_by(vowel_fr, vowel_eng, speaker_OTH, speaker_TGT,
+                  speaker_X) %>%
+  dplyr::summarize(`Native language effect (listeners)`=
+                     mean(`Native language effect (listeners)`)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(speaker_TGT, speaker_OTH, speaker_X) %>%
+  dplyr::summarize(`Native language effect (listeners)`=
+                     mean(`Native language effect (listeners)`)) %>%
+  dplyr::ungroup()
+nle <- dplyr::left_join(differences_human, differences_machine)
+nle_grouped <- dplyr::left_join(differences_human_grouped,
+                                differences_machine_grouped)
+nle_bycontext <- dplyr::left_join(differences_human_bycontext,
+                                differences_machine_bycontext)
+nle_byspeaker <- dplyr::left_join(differences_human_byspeaker,
+                                differences_machine_byspeaker)
+```
+
+```{r plot-nle-global}
+ggplot2::ggplot(nle,
+                ggplot2::aes(x=`Native language effect (models)`,
+                             y=`Native language effect (listeners)`,
+                             label=paste0(vowel_eng, ":", vowel_fr))) +
+  ggplot2::geom_smooth(method="lm", se=FALSE, lty="dashed",
+                       lwd=0.6, colour="black") +
+  ggplot2::geom_point() +
+  emdplot::emd_theme() +
+  ggplot2::theme(legend.position = "bottom",
+                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
+                 legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
+                 legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::labs(x="Native language effect (DPGMM)",
+                 y="Native language effect (humans)") +
+  ggplot2::ggsave("figures/Figure_NLE_Item.png", width=4, height=4)
+```
+
+```{r plot-nle-byvowel}
+ggplot2::ggplot(nle_grouped,
+                ggplot2::aes(x=`Native language effect (models)`,
+                             y=`Native language effect (listeners)`,
+                             label=paste0(vowel_eng, ":", vowel_fr))) +
+  ggplot2::geom_smooth(method="lm", se=FALSE, lty="dashed",
+                       lwd=0.6, colour="black") +
+  ggplot2::geom_point() +
+  ggrepel::geom_text_repel(family="Times New Roman", size=4) +
+  emdplot::emd_theme() +
+  ggplot2::theme(legend.position = "bottom",
+                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
+                 legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
+                 legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::labs(x="Native language effect (DPGMM)",
+                 y="Native language effect (humans)") +
+  ggplot2::ggsave("figures/Figure_NLE_Vowel.png", width=4, height=4)
+```
+
+```{r plot-nle-bycontext}
+ggplot2::ggplot(nle_bycontext,
+                ggplot2::aes(x=`Native language effect (models)`,
+                             y=`Native language effect (listeners)`,
+                             label=context)) +
+  ggplot2::geom_smooth(method="lm", se=FALSE, lty="dashed",
+                       lwd=0.6, colour="black") +
+  ggplot2::geom_point() +
+  ggrepel::geom_text_repel(family="Times New Roman", size=4) +
+  emdplot::emd_theme() +
+  ggplot2::theme(legend.position = "bottom",
+                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
+                 legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
+                 legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::labs(x="Native language effect (DPGMM)",
+                 y="Native language effect (humans)") +
+  ggplot2::ggsave("figures/Figure_NLE_Context.png", width=4, height=4)
+```
+
