@@ -74,10 +74,13 @@ subject_info_filt3 <- dplyr::filter(finishers,
                                     phonog_course_yes == 0,
                                     ling_course_yes == 0)
 
-## Exclude - speech/hearing/vision problems
+## Exclude - speech/hearing/vision problems/distractions/speakers
 subject_info_filt4 <- dplyr::filter(subject_info_filt3,
                                     hear_vis_problems_yes == 0,
-                                    troubles_de_lang_yes == 0)
+                                    troubles_de_lang_yes == 0,
+                                    distractions_yes == 0,
+                                    speakers == 0
+                                    )
 
 ## Filtering finished
 subject_info_filt <- subject_info_filt4
