@@ -4,7 +4,7 @@
 
 This repository contains everything needed to replicate the human experiment (stimuli, experimental scripts), the model training (DPGMM code, requires MATLAB; corpora available on request), and the analysis (trained models, data, data analysis code), from the paper,
 
-Millet, Juliette, Jurov, Nika, and Dunbar, Ewan. "Comparing unsupervised speech learning directly to human performance in speech perception." To appear in the proceedings of Cog Sci 2019, Montreal.
+**Millet, Juliette, Jurov, Nika, and Dunbar, Ewan.** *Comparing unsupervised speech learning directly to human performance in speech perception.* To appear in the proceedings of Cog Sci 2019, Montreal.
 
 
 ## Data analysis
