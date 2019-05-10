@@ -1,5 +1,23 @@
-# Comparing_humans_vs_DPGMM_en_fr
-## Model
+# Cog Sci 2019: Comparing unsupervised speech learning directly to human performance in speech perception
+
+This repository contains everything needed to replicate the human experiment (stimuli, experimental scripts), the model training (DPGMM code: corpora available on request), and the analysis (trained models, data, data analysis code), from the paper,
+
+Millet, Juliette, Jurov, Nika, and Dunbar, Ewan. "Comparing unsupervised speech learning directly to human performance in speech perception." To appear in the proceedings of Cog Sci 2019, Montreal.
+
+## Data analysis
+
+- The R Markdown file `analysis.Rmd` contains the complete set of analyses from the paper.
+- Experimental data and acoustic/model distances, as well as cached results of long data analysis steps, are contained under `data`.
+
+The R Markdown file depends on the following packages:
+
+- `magrittr`
+- `dplyr`
+- `ggplot2`
+- `readr`
+
+## Re-training the model
+
 ### I Preparation of the features to train the dpgmm model:
 
 ##### 1 If you only want mfccs you can extract your features as numpy array in .csv files from .wav files with the script 'script_create_feature_file'(with name_of_features_wanted=mfccs):
