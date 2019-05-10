@@ -164,6 +164,29 @@ summary_h_bylang <- tidyr::gather(summary_h_bypair, key=`Native language`,
                                          "French listeners",
                                          "English listeners"),
                 `English vowel`=vowel_eng, `French vowel`=vowel_fr)
+
+summary_m <- results %>%
+  dplyr::group_by(tripletid, context, speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_eng, vowel_fr) %>%
+  dplyr::summarize(pct_fr=delta_fr_dpgmm[1]>0,
+                   pct_eng=delta_eng_dpgmm[1]>0) %>%
+  dplyr::ungroup()
+summary_m_bypair <- summary_m %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(pct_fr=mean(pct_fr),
+                   pct_eng=mean(pct_eng)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(vowel_fr, vowel_eng) %>%
+  dplyr::summarize(pct_fr=mean(pct_fr),
+                   pct_eng=mean(pct_eng)) %>%
+  dplyr::ungroup() 
+summary_m_bylang <- tidyr::gather(summary_m_bypair, key=`Native language`,
+                                      value=Accuracy, pct_fr, pct_eng) %>%
+  dplyr::mutate(`Native language`=ifelse(`Native language`=="pct_fr",
+                                         "French model",
+                                         "English model"),
+                `English vowel`=vowel_eng, `French vowel`=vowel_fr)
 ```
 
 ```{r accuracy-plot}
@@ -180,7 +203,7 @@ ggplot2::ggplot(summary_h_bylang,
                                labels=as.character(seq(0, 1.00, .1)*100)) +
   emdplot::emd_theme() +
   ggplot2::theme(legend.position = "bottom",
-                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 text=ggplot2::element_text(size=18, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
                  legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
                  legend.key.width=ggplot2::unit(1.75, "cm")) +
@@ -203,17 +226,18 @@ ggplot2::ggplot(summary_h_bypair,
   ggplot2::geom_abline(slope=1, intercept=0, lty="dashed",
                        lwd=0.6, colour="#aaaaaa") +
   ggplot2::geom_point() +
-  ggrepel::geom_text_repel(family="Times New Roman", size=4.7) +
+  ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
   emdplot::emd_theme() +
   ggplot2::theme(legend.position = "bottom",
-                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 text=ggplot2::element_text(size=18, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
                  legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
                  legend.key.width=ggplot2::unit(1.75, "cm")) +
-  ggplot2::labs(x="Residualized accuracy (English)",
-                 y="Residualized accuracy (French)") +
+  ggplot2::labs(x="Corrected accuracy (English)",
+                 y="Corrected accuracy (French)") +
   ggplot2::ggsave("figures/Figure_FrVsEg.png", width=4, height=4)
 ```
+
 
 
 ```{r lm-predict-responses-from-deltas}
@@ -298,6 +322,52 @@ if (!file.exists(STAT_CACHE_FILE)) {
 pval_auc <- sum(statistics <=
            (AIC(model_native)-AIC(model_nonnative)))/(length(statistics)+1)
 print(pval_auc)
+```
+
+
+
+```{r summarize-delta}
+delta_fr <- results %>%
+  dplyr::filter(subject_language=="fr") %>%
+  dplyr::group_by(tripletid, context, speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_eng, vowel_fr) %>%
+  dplyr::summarize(pred_fr=delta_fr_dpgmm[1]) %>%
+  dplyr::ungroup()
+delta_eng <- results %>%
+  dplyr::filter(subject_language=="eng") %>%
+  dplyr::group_by(tripletid, context, speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_eng, vowel_fr) %>%
+  dplyr::summarize(pred_eng=delta_eng_dpgmm[1]) %>%
+  dplyr::ungroup()
+delta <- dplyr::left_join(delta_fr, delta_eng)
+delta_bypair <- delta %>%
+  dplyr::group_by(speaker_OTH, speaker_TGT,
+                  speaker_X, vowel_fr, vowel_eng) %>%
+  dplyr::summarize(pred_fr=mean(pred_fr),
+                   pred_eng=mean(pred_eng)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(vowel_fr, vowel_eng) %>%
+  dplyr::summarize(pred_fr=mean(pred_fr),
+                   pred_eng=mean(pred_eng)) %>%
+  dplyr::ungroup() 
+```
+
+
+```{r plot-eng-fr-model-byvowel}
+ggplot2::ggplot(delta_bypair,
+                ggplot2::aes(y=pred_fr, x=pred_eng,
+                             label=paste0(vowel_eng, ":", vowel_fr))) +
+  ggplot2::geom_point() +
+  ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
+  emdplot::emd_theme() +
+  ggplot2::theme(legend.position = "bottom",
+                 text=ggplot2::element_text(size=18, family="Times New Roman"),
+                 axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
+                 legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
+                 legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::labs(x="δ (English DPGMM)",
+                 y="δ (French DPGMM)") +
+  ggplot2::ggsave("figures/Figure_FrVsEg_model.png", width=4, height=4)
 ```
 
 
@@ -418,17 +488,19 @@ ggplot2::ggplot(nle,
                 ggplot2::aes(x=`Native language effect (models)`,
                              y=`Native language effect (listeners)`,
                              label=paste0(vowel_eng, ":", vowel_fr))) +
-  ggplot2::geom_smooth(method="lm", se=FALSE, lty="dashed",
-                       lwd=0.6, colour="black") +
+  ggplot2::geom_smooth(method="lm",  fullrange=TRUE, se=FALSE, lty="dashed",
+                       lwd=0.6,  colour="#aaaaaa") +
   ggplot2::geom_point() +
   emdplot::emd_theme() +
   ggplot2::theme(legend.position = "bottom",
-                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 text=ggplot2::element_text(size=17.5, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
                  legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
                  legend.key.width=ggplot2::unit(1.75, "cm")) +
   ggplot2::labs(x="Native language effect (DPGMM)",
                  y="Native language effect (humans)") +
+  ggplot2::scale_x_continuous(expand=c(0,0), limits=c(-0.065, 0.065)) +
+  ggplot2::coord_cartesian(xlim=c(-0.065, 0.065), ylim=c(-0.45, 0.35)) +
   ggplot2::ggsave("figures/Figure_NLE_Item.png", width=4, height=4)
 ```
 
@@ -437,16 +509,18 @@ ggplot2::ggplot(nle_grouped,
                 ggplot2::aes(x=`Native language effect (models)`,
                              y=`Native language effect (listeners)`,
                              label=paste0(vowel_eng, ":", vowel_fr))) +
-  ggplot2::geom_smooth(method="lm", se=FALSE, lty="dashed",
-                       lwd=0.6, colour="black") +
+  ggplot2::geom_smooth(method="lm", fullrange=TRUE, se=FALSE, lty="dashed",
+                       lwd=0.6, colour="#aaaaaa") +
   ggplot2::geom_point() +
-  ggrepel::geom_text_repel(family="Times New Roman", size=4) +
+  ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
   emdplot::emd_theme() +
   ggplot2::theme(legend.position = "bottom",
-                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 text=ggplot2::element_text(size=17.5, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
                  legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
                  legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::scale_x_continuous(expand=c(0,0), limits=c(-0.035, 0.035)) +
+  ggplot2::coord_cartesian(xlim=c(-0.035, 0.035), ylim=c(-0.25, 0.2346)) +
   ggplot2::labs(x="Native language effect (DPGMM)",
                  y="Native language effect (humans)") +
   ggplot2::ggsave("figures/Figure_NLE_Vowel.png", width=4, height=4)
@@ -457,16 +531,18 @@ ggplot2::ggplot(nle_bycontext,
                 ggplot2::aes(x=`Native language effect (models)`,
                              y=`Native language effect (listeners)`,
                              label=context)) +
-  ggplot2::geom_smooth(method="lm", se=FALSE, lty="dashed",
-                       lwd=0.6, colour="black") +
+  ggplot2::geom_smooth(method="lm", fullrange=TRUE, se=FALSE, lty="dashed",
+                       lwd=0.6, colour="#aaaaaa") +
   ggplot2::geom_point() +
-  ggrepel::geom_text_repel(family="Times New Roman", size=4) +
+  ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
   emdplot::emd_theme() +
   ggplot2::theme(legend.position = "bottom",
-                 text=ggplot2::element_text(size=12, family="Times New Roman"),
+                 text=ggplot2::element_text(size=17.5, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
                  legend.text=ggplot2::element_text(size=10, family="Times New Roman"),
                  legend.key.width=ggplot2::unit(1.75, "cm")) +
+  ggplot2::scale_x_continuous(expand=c(0,0), limits=c(-0.05, 0.02)) +
+  ggplot2::coord_cartesian(xlim=c(-0.05, 0.02), ylim=c(-0.25, 0.2346)) +
   ggplot2::labs(x="Native language effect (DPGMM)",
                  y="Native language effect (humans)") +
   ggplot2::ggsave("figures/Figure_NLE_Context.png", width=4, height=4)
