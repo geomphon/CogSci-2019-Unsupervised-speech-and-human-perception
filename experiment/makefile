@@ -36,7 +36,7 @@ normalize_vectors:
 
 calculate_distances:
 	python ./scripts/dtw_distances.py \
-	./outputs/distance_list.csv \
+	./outputs/item_info.csv \
 	./stimuli/mfccs_norm/ 
 
 anonymize_lmeds_data:
@@ -51,7 +51,7 @@ anonymize_lmeds_data:
 	&& python ./analysis/scripts/anonymize_lmeds_data_filenames.py \
 	./analysis/lmeds_results_not_github/fr2 \
 	./analysis/anon_data/fr2 \
-	./analysis/outputs/anon_table_fr2.csv
+	
 
 split_output_to_results_files:
 	python ./analysis/scripts/split_output_to_results_files.py \
@@ -61,11 +61,11 @@ split_output_to_results_files:
 	./analysis/outputs/postsurvey.txt \
 	./analysis/outputs/postsurvey2.txt
 
-analysis_step1:
-	Rscript --vanilla ./analysis/scripts/analysis_step1_preprocess_strut.Rscript \
+combine_output:
+	Rscript --vanilla ./analysis/scripts/combine_filter.Rscript \
 	./analysis/outputs/presurvey.txt \
 	./analysis/outputs/clean_results.csv \
 	./analysis/outputs/postsurvey.txt \
 	./analysis/outputs/postsurvey2.txt \
-	./outputs/distance_list.csv \
-	./analysis/outputs/analysed_data.csv
+	./outputs/item_info.csv \
+	./analysis/outputs/experiment_data.csv

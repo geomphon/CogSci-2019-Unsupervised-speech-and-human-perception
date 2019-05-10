@@ -18,7 +18,7 @@ presurvey_file <- ARGS[1]
 results_file <- ARGS[2]
 postsurvey_file <- ARGS[3]
 postsurvey2_file <- ARGS[4]
-acoustic_dist_file <- ARGS[5]
+item_info_file <- ARGS[5]
 output_file <- ARGS[6] #csv of filtered data for analysis
 
 
@@ -42,7 +42,7 @@ postsurvey<- readr::read_csv(postsurvey_file)
 postsurvey2<- readr::read_csv(postsurvey2_file)
 
 #ARGUMENT 5: ITEM INFO 
-item_info <- readr::read_csv(acoustic_dist_file) 
+item_info <- readr::read_csv(item_info_file) 
 #distances_list_final.csv
 
 
@@ -78,8 +78,8 @@ subject_info_filt3 <- dplyr::filter(finishers,
 subject_info_filt4 <- dplyr::filter(subject_info_filt3,
                                     hear_vis_problems_yes == 0,
                                     troubles_de_lang_yes == 0,
-                                    distractions_yes == 0,
-                                    speakers == 0
+#                                    distractions_yes == 0,
+#                                    speakers == 0
                                     )
 
 ## Filtering finished
