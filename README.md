@@ -83,9 +83,14 @@ Then extract posteriors using a trained model:
 
 ### Computing distances
 
-
+To compute distances on posteriorgrams,
 
 ```python script_ABX.py stimuli/triplets_list.csv <posterior directory> kl_divergence <output_prefix>```
+
+To compute distances on MFCCs,
+
+```python script_ABX.py stimuli/triplets_list.csv <stimuli feature output directory> cosine <output_prefix>```
+
 
 If you wish to compute distances on another set of triplets, you need to create a file analogous to `stimuli/triplets_list.csv`. Critically, it must contain the columns 'file_OTH' (incorrect answer stimulus), 'file_TGT' (target stimulus) et 'file_X' (X stimulus).
 
