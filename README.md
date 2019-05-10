@@ -10,6 +10,7 @@ This repository contains everything needed to replicate the human experiment (st
 ## Data analysis
 
 - The R Markdown file `analysis.Rmd` contains the complete set of analyses from the paper.
+- The output can be seen in `analysis.html` and the figures, in particular, under `figures/`
 - Experimental data and acoustic/model distances, as well as cached results of long data analysis steps, are contained under `data`.
 
 The R Markdown file depends on the following packages:
