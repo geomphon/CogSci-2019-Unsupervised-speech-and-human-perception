@@ -42,6 +42,11 @@ correct_ipa_context <- function(data){
                   ifelse(context == "V_F", "v_f", tolower(context))))))))))))))
   return(data)
 }
+emd_theme <- function(text_size=18) {
+  return(ggplot2::theme_bw() +
+           ggplot2::theme(text=ggplot2::element_text(size=text_size),
+                          legend.position="bottom"))
+}
 ```
 
 ```{r load-data, include=FALSE}
@@ -201,7 +206,7 @@ ggplot2::ggplot(summary_h_bylang,
                                limits = c(0, 1.00),
                                breaks=seq(0, 1.00, .1),
                                labels=as.character(seq(0, 1.00, .1)*100)) +
-  emdplot::emd_theme() +
+  emd_theme() +
   ggplot2::theme(legend.position = "bottom",
                  text=ggplot2::element_text(size=18, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
@@ -227,7 +232,7 @@ ggplot2::ggplot(summary_h_bypair,
                        lwd=0.6, colour="#aaaaaa") +
   ggplot2::geom_point() +
   ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
-  emdplot::emd_theme() +
+  emd_theme() +
   ggplot2::theme(legend.position = "bottom",
                  text=ggplot2::element_text(size=18, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
@@ -359,7 +364,7 @@ ggplot2::ggplot(delta_bypair,
                              label=paste0(vowel_eng, ":", vowel_fr))) +
   ggplot2::geom_point() +
   ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
-  emdplot::emd_theme() +
+  emd_theme() +
   ggplot2::theme(legend.position = "bottom",
                  text=ggplot2::element_text(size=18, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
@@ -491,7 +496,7 @@ ggplot2::ggplot(nle,
   ggplot2::geom_smooth(method="lm",  fullrange=TRUE, se=FALSE, lty="dashed",
                        lwd=0.6,  colour="#aaaaaa") +
   ggplot2::geom_point() +
-  emdplot::emd_theme() +
+  emd_theme() +
   ggplot2::theme(legend.position = "bottom",
                  text=ggplot2::element_text(size=17.5, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
@@ -513,7 +518,7 @@ ggplot2::ggplot(nle_grouped,
                        lwd=0.6, colour="#aaaaaa") +
   ggplot2::geom_point() +
   ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
-  emdplot::emd_theme() +
+  emd_theme() +
   ggplot2::theme(legend.position = "bottom",
                  text=ggplot2::element_text(size=17.5, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
@@ -535,7 +540,7 @@ ggplot2::ggplot(nle_bycontext,
                        lwd=0.6, colour="#aaaaaa") +
   ggplot2::geom_point() +
   ggrepel::geom_text_repel(family="Times New Roman", size=4.9) +
-  emdplot::emd_theme() +
+  emd_theme() +
   ggplot2::theme(legend.position = "bottom",
                  text=ggplot2::element_text(size=17.5, family="Times New Roman"),
                  axis.text=ggplot2::element_text(size=15, family="Times New Roman"),
