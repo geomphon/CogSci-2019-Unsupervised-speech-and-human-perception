@@ -218,7 +218,7 @@ ggplot2::ggplot(summary_h_bylang,
                                                 title.hjust=0.5)) +
   ggplot2::labs(x="French vowel", y="English vowel", fill="Percent accuracy") +
   ggplot2::facet_grid(`Native language` ~ .) +
-  ggplot2::ggsave("figures/Figure_AccuraciesGrouped.png", width=4, height=5)
+  ggplot2::ggsave("figures/Figure_AccuraciesGrouped__filtered.png", width=4, height=5)
 ```
 
 ```{r cor-human-eng-fr}
