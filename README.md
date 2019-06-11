@@ -86,6 +86,8 @@ Then extract posteriors using a trained model:
 If you want to transform the source files and then cut them (as we did in the paper), you need to extract the posteriors from the features extracted from the big source files and then cut them following the textgrid files:
 
 ```python script_extract_posteriors.py <stimuli feature output directory (of source files)> <saved model mat file> <posterior directory source files>```
+
+
 ```python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word <cut files folder> <meta information of each cut file.csv> <window size in ms> <stride size in ms> <textgrid file 1>,<posterior file 1> <textgrid file 2>,<posterior file 2> ... ```
 
 ### Computing distances
