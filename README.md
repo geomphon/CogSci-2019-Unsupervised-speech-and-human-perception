@@ -28,9 +28,11 @@ Corpora are available on request.
 
 ### Input feature preparation
 
-The paper uses MFCCs as inputs. To extract MFCC features from a directory containing wav files, to corresponding CSVs in another directory, use
+The paper uses MFCCs as inputs. If you do not want to use kaldi, you can extract MFCC features from a directory containing wav files (but no vtln will be applied to it), to corresponding CSVs in another directory, use
 
 ```python script_create_feature_file.py mfccs <wav directory> <feature output directory>```
+
+Otherwise you can use kaldi to extract your features following the tutorial in the folder vtln. Once you have all your data as csv files, you can do the following:
 
 The features must be moved into a single `.mat` file  for training, and a single CSV for validation. The paper uses a 90/10 split:
 
