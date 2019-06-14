@@ -40,7 +40,7 @@ See `experiment/README.md` for details on reproducing the experiment.
 
 ## Reproducing the DPGMM training
 
-Training corpora are open source and are available on request (they are too large for this repository). Further details on reproducing training can be found in `README_DPGMM_training.md`. Trained model (`.mat`) files can be found in **XXX**.
+Training corpora are open source and are available on request (they are too large for this repository). Further details on reproducing training can be found in `README_DPGMM_training.md`. Trained model (`.mat`) files can be found in `models/`.
 
 ## Applying the trained models to the experimental stimuli
 
