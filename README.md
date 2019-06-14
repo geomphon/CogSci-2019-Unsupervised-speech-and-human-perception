@@ -64,7 +64,7 @@ Then cut out the relevant portions:
 
 To apply the features directly to the cut-out experimental stimuli use  `script_create_feature_file.py` to extract MFCC features for the cut-out experimental stimuli:
 
-```python script_create_feature_file.py mfccs experiment/stimuli/intervals <stimuli feature output directory>```
+```python script_create_features_files.py mfccs experiment/stimuli/intervals <stimuli feature output directory>```
 
 Then extract posteriors using a trained model:
 
