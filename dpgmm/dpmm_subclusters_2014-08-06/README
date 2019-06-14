@@ -1,3 +1,21 @@
+# Cog Sci 2019: Comparing unsupervised speech learning directly to human performance in speech perception
+
+**This repository contains large binary files stored as Git LFS.** Install Git LFS (https://help.github.com/en/articles/installing-git-large-file-storage) before cloning.
+
+This repository contains everything needed to replicate the human experiment (stimuli, experimental scripts), the model training (DPGMM code, requires MATLAB; corpora available on request), and the analysis (trained models, data, data analysis code), from the paper,
+
+> **Millet, Juliette, Jurov, Nika, and Dunbar, Ewan.** *Comparing unsupervised speech learning directly to human performance in speech perception.* To appear in the proceedings of Cog Sci 2019, Montreal.
+
+The present code is forked from
+
+[1] J. Chang and J. W. Fisher II, "Parallel Sampling of DP Mixtures
+    Models using Sub-Cluster Splits". Neural Information Processing
+    Systems (NIPS 2013), Lake Tahoe, NV, USA, Dec 2013.
+    
+The original README for this code is pasted below.
+
+=====
+
 The following code is provided as is.  It was used in:
 
 [1] J. Chang and J. W. Fisher II, "Parallel Sampling of DP Mixtures
@@ -33,6 +51,4 @@ If errors are reported, you may need to debug a little:
 If all else fails, you can try to email me at jchang7@csail.mit.edu.
 I will try to help if I can.
 
-Revision History
-===================
-2014-08-07 : fixed empty cluster bug
+
