@@ -34,66 +34,35 @@ The current repository contains the following files inside the folder `experimen
 * `lmeds_material` folder, where all the necessary files for the online experiment are stored;
 * `analysis` folder containing the anonymized data, the scripts necessary for the analysis as well as the outputs of those scripts.
 
-See `experiment/README.md` for details on reproducing the experim
+See `experiment/README.md` for details on reproducing the experiment.
 
 
 
 ## Reproducing the DPGMM training
 
-Training corpora are open source and are available on request (they are too large for this repository). This 
+Training corpora are open source and are available on request (they are too large for this repository). Further details on reproducing training can be found in `README_DPGMM_training.md`. Trained model (`.mat`) files can be found in **XXX**.
 
-### Input feature preparation
-
-The paper uses MFCCs as inputs. If you do not want to use kaldi, you can extract MFCC features from a directory containing wav files (but no vtln will be applied to it), to corresponding CSVs in another directory, use
-
-```python script_create_feature_file.py mfccs <wav directory> <feature output directory>```
-
-Otherwise you can use kaldi to extract your features following the tutorial in the folder vtln. Once you have all your data as csv files, you can do the following:
-
-The features must be moved into a single `.mat` file  for training, and a single CSV for validation. The paper uses a 90/10 split:
-
-```python script_csvnp2mat.py  <feature output directory> <training data filename>.mat <validation data filename>.csv 10```
-
-The CSV file contains all the validation frames (not used for training) on which you can test the log-likelihood of your model as it learns.
-
-Dependencies:
-
-- `librosa`
-- `scipy`
-- `numpy`
-
-### Model training
-
-Dependencies:
-
-- MATLAB
-- GNU Scientific Library (GSL)
-- Eigen
-
-Add your GSL and Eigen library paths to LD_LIBRARY_PATH:
-
-```export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<gsl_path>:<eigen_path>```
-
-Modify the `GSLFLAGS` and `EIGENFLAGS` variables in the file file `dpgmm/dpmm_subclusters_2014-08-06/Gaussian/compile_MEX.m` to correspond to your environment.
-
-Change directories to `dpgmm/dpmm_subclusters_2014-08-06/Gaussian`. Launch MATLAB and do
-
-```compile_MEX```
-
-This will compile the C code. Check that everything is okay by launching the demo:
-
-```demo```
-
-If everything is working, you can start using the code:
-
-```my_run_dpgmm_subclusters('<training data filename>.mat', '<output_folder>', <number of CPUs>, true);```
+## Applying the trained models to the experimental stimuli
 
 
-The folder `<output_folder>` will contain saved parameters of the models every 20 iterations, saved as .mat files. You must create this folder, and a `log/` subfolder, in advance, if you want the log likelihood to be saved during the training process.
+### Method for generating posteriorgrams used in the paper
 
-### Calculating posteriors for the experimental stimuli
+If you want to transform the entire source files and then cut them (as we did in the paper), you need to extract features for the uncut wav files:
 
-First use  `script_create_feature_file.py` to extract MFCC features for the experimental stimuli:
+```python script_create_feature_file.py mfccs Stimuli/wavs_source <stimuli feature output directory>```
+
+Then extract posteriors:
+
+```python script_extract_posteriors.py <stimuli feature output directory> <saved model mat file> <posterior directory source files>```
+
+Then cut out the relevant portions:
+
+```python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word <cut files folder> <meta information of each cut file.csv> <window size in ms> <stride size in ms> <textgrid file 1>,<posterior file 1> <textgrid file 2>,<posterior file 2> ... ```
+
+
+### Alternative: Conceptually more sensible (but worse-performing) method to generate posteriorgrams
+
+To apply the features directly to the cut-out experimental stimuli use  `script_create_feature_file.py` to extract MFCC features for the cut-out experimental stimuli:
 
 ```python script_create_feature_file.py mfccs experiment/stimuli/intervals <stimuli feature output directory>```
 
@@ -101,12 +70,7 @@ Then extract posteriors using a trained model:
 
 ```python script_extract_posteriors.py <stimuli feature output directory> <saved model mat file> <posterior directory>```
 
-If you want to transform the source files and then cut them (as we did in the paper), you need to extract the posteriors from the features extracted from the big source files and then cut them following the textgrid files:
-
-```python script_extract_posteriors.py <stimuli feature output directory (of source files)> <saved model mat file> <posterior directory source files>```
-
-
-```python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word <cut files folder> <meta information of each cut file.csv> <window size in ms> <stride size in ms> <textgrid file 1>,<posterior file 1> <textgrid file 2>,<posterior file 2> ... ```
+This is not what we did in the paper (see above) because Kaldi feature extraction for short files is problemeatic. The approach of using the source files also (some improve the quality of the speaker normalization.
 
 ### Computing distances
 
