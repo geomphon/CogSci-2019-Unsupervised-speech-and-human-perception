@@ -44,47 +44,52 @@ Training corpora are open source and are available on request (they are too larg
 
 ## Applying the trained models to the experimental stimuli
 
+The Python code in this section has the following dependencies:
 
-### Method for generating posteriorgrams used in the paper
-
-If you want to transform the entire source files and then cut them (as we did in the paper), you need to extract features for the uncut wav files:
-
-```python script_create_feature_file.py mfccs Stimuli/wavs_source <stimuli feature output directory>```
-
-Then extract posteriors:
-
-```python script_extract_posteriors.py <stimuli feature output directory> <saved model mat file> <posterior directory source files>```
-
-Then cut out the relevant portions:
-
-```python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word <cut files folder> <meta information of each cut file.csv> <window size in ms> <stride size in ms> <textgrid file 1>,<posterior file 1> <textgrid file 2>,<posterior file 2> ... ```
+- Python 3
+- `librosa`
+- `scipy`
+- `textgrid`
+- `pandas`
 
 
-### Alternative: Conceptually more sensible (but worse-performing) method to generate posteriorgrams
+### To generate MFCC and DPGMM posteriorgram features
 
-To apply the features directly to the cut-out experimental stimuli use  `script_create_feature_file.py` to extract MFCC features for the cut-out experimental stimuli:
 
-```python script_create_features_files.py mfccs experiment/stimuli/intervals <stimuli feature output directory>```
+If you want to transform the entire source files and then cut them (as we did in the paper), you first need to extract features for the uncut wav files:
 
-Then extract posteriors using a trained model:
+```
+mkdir -f stimulus_features
+python script_create_feature_file.py mfccs Stimuli/wavs_source stimulus_features```
 
-```python script_extract_posteriors.py <stimuli feature output directory> <saved model mat file> <posterior directory>```
+Then -f extract posteriors:
 
-This is not what we did in the paper (see above) because Kaldi feature extraction for short files is problemeatic. The approach of using the source files also (some improve the quality of the speaker normalization.
+```mkdir english_posteriors french_posteriors
+python script_extract_posteriors.py stimulus_features models/English_vtln_1501.mat english_posteriors
+python script_extract_posteriors.py stimulus_features models/French_vtln_1501.mat french_posteriors```
+
+Finally, cut out the relevant parts of the posteriorgrams:
+
+```mkdir -f english_posteriors_cut french_posteriors_cut
+python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word english_posteriors_cut english_posteriors_meta.csv 25 10 Stimuli/textgrids/Cecilia_ABX_ENG_corrected.TextGrid,english_posteriors/Cecilia_ABX_ENG_clean.csv Stimuli/textgrids/Maureen_ABX_ENG_corrected.TextGrid,english_posteriors/Maureen_ABX_ENG_clean.csv Stimuli/textgrids/Cecilia_ABX_FR_corrected.TextGrid,english_posteriors/Cecilia_ABX_FR_clean.csv Stimuli/textgrids/Maureen_ABX_FR_corrected.TextGrid,english_posteriors/Maureen_ABX_FR_clean.csv Stimuli/textgrids/Ewan_ABX_ENG_corrected.TextGrid,english_posteriors/Ewan_ABX_ENG_clean.csv Stimuli/textgrids/Remi_ABX_FR_corrected.TextGrid,english_posteriors/Remi_ABX_FR_clean.csv Stimuli/textgrids/Jeremy_ABX_ENG_corrected.TextGrid,english_posteriors/Jeremy_ABX_ENG_clean.csv Stimuli/textgrids/Veronique_ABX_ENG_corrected.TextGrid,english_posteriors/Veronique_ABX_ENG_clean.csv Stimuli/textgrids/Marc_ABX_FR_corrected.TextGrid,english_posteriors/Marc_ABX_FR_clean.csv Stimuli/textgrids/Veronique_ABX_FR_corrected.TextGrid,english_posteriors/Veronique_ABX_FR_clean.csv
+python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word french_posteriors_cut french_posteriors_meta.csv 25 10 Stimuli/textgrids/Cecilia_ABX_ENG_corrected.TextGrid,french_posteriors/Cecilia_ABX_ENG_clean.csv Stimuli/textgrids/Maureen_ABX_ENG_corrected.TextGrid,french_posteriors/Maureen_ABX_ENG_clean.csv Stimuli/textgrids/Cecilia_ABX_FR_corrected.TextGrid,french_posteriors/Cecilia_ABX_FR_clean.csv Stimuli/textgrids/Maureen_ABX_FR_corrected.TextGrid,french_posteriors/Maureen_ABX_FR_clean.csv Stimuli/textgrids/Ewan_ABX_ENG_corrected.TextGrid,french_posteriors/Ewan_ABX_ENG_clean.csv Stimuli/textgrids/Remi_ABX_FR_corrected.TextGrid,french_posteriors/Remi_ABX_FR_clean.csv Stimuli/textgrids/Jeremy_ABX_ENG_corrected.TextGrid,french_posteriors/Jeremy_ABX_ENG_clean.csv Stimuli/textgrids/Veronique_ABX_ENG_corrected.TextGrid,french_posteriors/Veronique_ABX_ENG_clean.csv Stimuli/textgrids/Marc_ABX_FR_corrected.TextGrid,french_posteriors/Marc_ABX_FR_clean.csv Stimuli/textgrids/Veronique_ABX_FR_corrected.TextGrid,french_posteriors/Veronique_ABX_FR_clean.csv```
+
+Similarly, cut out the relevant parts of the MFCC features:
+
+```mkdir -f stimulus_features_cut
+python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word stimulus_features_cut stimulus_meta.csv 25 10 Stimuli/textgrids/Cecilia_ABX_ENG_corrected.TextGrid,stimulus_features/Cecilia_ABX_ENG_clean.csv Stimuli/textgrids/Maureen_ABX_ENG_corrected.TextGrid,stimulus_features/Maureen_ABX_ENG_clean.csv Stimuli/textgrids/Cecilia_ABX_FR_corrected.TextGrid,stimulus_features/Cecilia_ABX_FR_clean.csv Stimuli/textgrids/Maureen_ABX_FR_corrected.TextGrid,stimulus_features/Maureen_ABX_FR_clean.csv Stimuli/textgrids/Ewan_ABX_ENG_corrected.TextGrid,stimulus_features/Ewan_ABX_ENG_clean.csv Stimuli/textgrids/Remi_ABX_FR_corrected.TextGrid,stimulus_features/Remi_ABX_FR_clean.csv Stimuli/textgrids/Jeremy_ABX_ENG_corrected.TextGrid,stimulus_features/Jeremy_ABX_ENG_clean.csv Stimuli/textgrids/Veronique_ABX_ENG_corrected.TextGrid,stimulus_features/Veronique_ABX_ENG_clean.csv Stimuli/textgrids/Marc_ABX_FR_corrected.TextGrid,stimulus_features/Marc_ABX_FR_clean.csv Stimuli/textgrids/Veronique_ABX_FR_corrected.TextGrid,stimulus_features/Veronique_ABX_FR_clean.csv```
+
 
 ### Computing distances
 
 To compute distances on posteriorgrams,
 
-```python script_ABX.py stimuli/triplets_list.csv <posterior directory> kl_divergence <output_prefix>```
+```python script_ABX.py stimuli/triplets_list.csv english_posteriors_cut kl eng_dpgmm
+python script_ABX.py stimuli/triplets_list.csv french_posteriors_cut kl fr_dpgmm```
 
 To compute distances on MFCCs,
 
-```python script_ABX.py stimuli/triplets_list.csv <stimuli feature output directory> cosine <output_prefix>```
-
-
-If you wish to compute distances on another set of triplets, you need to create a file analogous to `stimuli/triplets_list.csv`. Critically, it must contain the columns 'file_OTH' (incorrect answer stimulus), 'file_TGT' (target stimulus) et 'file_X' (X stimulus).
-
+```python script_ABX.py stimuli/triplets_list.csv stimulus_features_cut cosine mfcc_```
 
 This script creates 3 files: <output_prefix>_final.csv is a copy of template.csv with the distances added, <output_prefix>_results.csv is of the form A, B, X, real (right answer), result_model (model's answer) and <output_prefix>_distances.csv same as _results but with AX and BX distances at the end
 
