@@ -16,6 +16,8 @@ Output:
 
 import os.path as path
 import scipy
+import scipy.linalg
+import scipy.special
 import scipy.io as io
 import numpy as np
 import os

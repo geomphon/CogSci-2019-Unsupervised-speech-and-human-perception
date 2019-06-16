@@ -40,7 +40,10 @@ def extract_features(path_to_wavs, feat_func, path_to_save):
             print(filename, waveform.shape)
             if feat_func == 'mfccs':
                 feat = librosa.feature.mfcc(y=waveform, sr=fs, S=None, n_mfcc=13, fmin = 0, fmax = 8000) 
-                feat = np.swapaxes(feat, 0, 1)
+                feat_delta = librosa.feature.delta(feat)
+                feat_delta_2 = librosa.feature.delta(feat, order=2)
+                feat = np.swapaxes(np.concatenate((feat, feat_delta,
+                    feat_delta_2)), 0, 1)
 
             np.savetxt( path_to_save + '/' + filename[:len(filename) - 3] + 'csv', feat, delimiter=',')
 

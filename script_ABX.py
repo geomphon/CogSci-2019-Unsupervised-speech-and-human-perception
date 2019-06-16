@@ -118,7 +118,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Output the abx scores from list of abx triplet and .csv files of the representation of each triphone')
     parser.add_argument('file_abx', metavar='abx', type=str,
                         help='file with the list of ABX triplet you want to compare, the file needs to have at least three columns, one file_OTH, file_TGT and file_X')
-    parser.add_argument('fold_file', metavar='fold', type=str,
+    parser.add_argument('fold_files', metavar='fold', type=str,
                         help='the folder where the features files are')
     parser.add_argument('distance', metavar='d', type=str,
                         help='distance used for the dtw computation: distance used by cdist, can be \'braycurtis\', '
