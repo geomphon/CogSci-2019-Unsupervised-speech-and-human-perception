@@ -60,7 +60,7 @@ If you want to transform the entire source files and then cut them (as we did in
 
 ```
 mkdir -p stimulus_features
-python script_create_feature_file.py mfccs Stimuli/wavs_source stimulus_features
+python script_create_features_files.py mfccs Stimuli/wavs_source stimulus_features
 ```
 
 Then extract posteriors:
