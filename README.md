@@ -59,14 +59,14 @@ The Python code in this section has the following dependencies:
 If you want to transform the entire source files and then cut them (as we did in the paper), you first need to extract features for the uncut wav files:
 
 ```
-mkdir -f stimulus_features
+mkdir -p stimulus_features
 python script_create_feature_file.py mfccs Stimuli/wavs_source stimulus_features
 ```
 
-Then -f extract posteriors:
+Then extract posteriors:
 
 ```
-mkdir english_posteriors french_posteriors
+mkdir -p english_posteriors french_posteriors
 python script_extract_posteriors.py stimulus_features models/English_vtln_1501.mat english_posteriors
 python script_extract_posteriors.py stimulus_features models/French_vtln_1501.mat french_posteriors
 ```
@@ -74,7 +74,7 @@ python script_extract_posteriors.py stimulus_features models/French_vtln_1501.ma
 Finally, cut out the relevant parts of the posteriorgrams:
 
 ```
-mkdir -f english_posteriors_cut french_posteriors_cut
+mkdir -p english_posteriors_cut french_posteriors_cut
 python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word english_posteriors_cut english_posteriors_meta.csv 25 10 Stimuli/textgrids/Cecilia_ABX_ENG_corrected.TextGrid,english_posteriors/Cecilia_ABX_ENG_clean.csv Stimuli/textgrids/Maureen_ABX_ENG_corrected.TextGrid,english_posteriors/Maureen_ABX_ENG_clean.csv Stimuli/textgrids/Cecilia_ABX_FR_corrected.TextGrid,english_posteriors/Cecilia_ABX_FR_clean.csv Stimuli/textgrids/Maureen_ABX_FR_corrected.TextGrid,english_posteriors/Maureen_ABX_FR_clean.csv Stimuli/textgrids/Ewan_ABX_ENG_corrected.TextGrid,english_posteriors/Ewan_ABX_ENG_clean.csv Stimuli/textgrids/Remi_ABX_FR_corrected.TextGrid,english_posteriors/Remi_ABX_FR_clean.csv Stimuli/textgrids/Jeremy_ABX_ENG_corrected.TextGrid,english_posteriors/Jeremy_ABX_ENG_clean.csv Stimuli/textgrids/Veronique_ABX_ENG_corrected.TextGrid,english_posteriors/Veronique_ABX_ENG_clean.csv Stimuli/textgrids/Marc_ABX_FR_corrected.TextGrid,english_posteriors/Marc_ABX_FR_clean.csv Stimuli/textgrids/Veronique_ABX_FR_corrected.TextGrid,english_posteriors/Veronique_ABX_FR_clean.csv
 python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word french_posteriors_cut french_posteriors_meta.csv 25 10 Stimuli/textgrids/Cecilia_ABX_ENG_corrected.TextGrid,french_posteriors/Cecilia_ABX_ENG_clean.csv Stimuli/textgrids/Maureen_ABX_ENG_corrected.TextGrid,french_posteriors/Maureen_ABX_ENG_clean.csv Stimuli/textgrids/Cecilia_ABX_FR_corrected.TextGrid,french_posteriors/Cecilia_ABX_FR_clean.csv Stimuli/textgrids/Maureen_ABX_FR_corrected.TextGrid,french_posteriors/Maureen_ABX_FR_clean.csv Stimuli/textgrids/Ewan_ABX_ENG_corrected.TextGrid,french_posteriors/Ewan_ABX_ENG_clean.csv Stimuli/textgrids/Remi_ABX_FR_corrected.TextGrid,french_posteriors/Remi_ABX_FR_clean.csv Stimuli/textgrids/Jeremy_ABX_ENG_corrected.TextGrid,french_posteriors/Jeremy_ABX_ENG_clean.csv Stimuli/textgrids/Veronique_ABX_ENG_corrected.TextGrid,french_posteriors/Veronique_ABX_ENG_clean.csv Stimuli/textgrids/Marc_ABX_FR_corrected.TextGrid,french_posteriors/Marc_ABX_FR_clean.csv Stimuli/textgrids/Veronique_ABX_FR_corrected.TextGrid,french_posteriors/Veronique_ABX_FR_clean.csv
 ```
@@ -82,7 +82,7 @@ python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,s
 Similarly, cut out the relevant parts of the MFCC features:
 
 ```
-mkdir -f stimulus_features_cut
+mkdir -p stimulus_features_cut
 python script_cut_from_text_grid.py --excluded-words JE,STOCKE,ICI,I,LIKE,HERE,sp word stimulus_features_cut stimulus_meta.csv 25 10 Stimuli/textgrids/Cecilia_ABX_ENG_corrected.TextGrid,stimulus_features/Cecilia_ABX_ENG_clean.csv Stimuli/textgrids/Maureen_ABX_ENG_corrected.TextGrid,stimulus_features/Maureen_ABX_ENG_clean.csv Stimuli/textgrids/Cecilia_ABX_FR_corrected.TextGrid,stimulus_features/Cecilia_ABX_FR_clean.csv Stimuli/textgrids/Maureen_ABX_FR_corrected.TextGrid,stimulus_features/Maureen_ABX_FR_clean.csv Stimuli/textgrids/Ewan_ABX_ENG_corrected.TextGrid,stimulus_features/Ewan_ABX_ENG_clean.csv Stimuli/textgrids/Remi_ABX_FR_corrected.TextGrid,stimulus_features/Remi_ABX_FR_clean.csv Stimuli/textgrids/Jeremy_ABX_ENG_corrected.TextGrid,stimulus_features/Jeremy_ABX_ENG_clean.csv Stimuli/textgrids/Veronique_ABX_ENG_corrected.TextGrid,stimulus_features/Veronique_ABX_ENG_clean.csv Stimuli/textgrids/Marc_ABX_FR_corrected.TextGrid,stimulus_features/Marc_ABX_FR_clean.csv Stimuli/textgrids/Veronique_ABX_FR_corrected.TextGrid,stimulus_features/Veronique_ABX_FR_clean.csv
 ```
 
