@@ -39,7 +39,9 @@ def extract_features(path_to_wavs, feat_func, path_to_save):
             waveform = waveform.astype(float)
             print(filename, waveform.shape)
             if feat_func == 'mfccs':
-                feat = librosa.feature.mfcc(y=waveform, sr=fs, S=None, n_mfcc=13, fmin = 0, fmax = 8000) 
+                feat = librosa.feature.mfcc(y=waveform, sr=fs, S=None, n_mfcc=13, fmin=0, fmax=8000,
+                                            n_fft=int(0.025 * fs),
+                                            hop_length=int(0.01 * fs))
                 feat_delta = librosa.feature.delta(feat)
                 feat_delta_2 = librosa.feature.delta(feat, order=2)
                 feat = np.swapaxes(np.concatenate((feat, feat_delta,
